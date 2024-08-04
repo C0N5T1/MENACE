@@ -75,11 +75,8 @@ class Gamestate():
         
 class Q_Learning():
     
-    def __init__(self, alpha=0.1, gamma=0.9, epsilon=0.1):
+    def __init__(self):
         self.q_table = {}
-        self.alpha = alpha
-        self.gamma = gamma
-        self.epsilon = epsilon
         self.move_log = []
      
     # turns a np.array into a tuple of length 9   
@@ -104,16 +101,31 @@ class Q_Learning():
 ################################ Work in Progress ##################################
 ####################################################################################
 
+    # function that returns an action based on wieghts
+    def get_weighted_action(self, state):
+        
+        valid_actions = self.get_valid_actions(state)
+        
+        if state not in self.q_table:
+            self.q_table[state] = np.ones(9)
+            
+        weights = np.array([self.q_table[state][i] for i in valid_actions]) 
+        weights /= weights.sum()
+        
+        action = random.choices(valid_actions, weights=weights, k=1)[0]
+        
+        return action
+        
     # function that takes a state, action and reward
     # and updates the q_table
     def update_q_table(self, state, action, reward):
         
         if state not in self.q_table:
-            self.q_table[state] = np.zeros(9)
+            self.q_table[state] = np.ones(9)
             
-        self.qtable[state][action] = reward
+        self.qtable[state][action] += reward
         
-    # function that appends a move to th move log
+    # function that appends a move to the move log
     def update_move_log(self, state, action):
         self.move_log.append((state, action))
         
@@ -131,26 +143,37 @@ class Q_Learning():
                 action = self.get_random_action(state)
                 square = str(action + 1)
                 
+                print(square)
+                
                 Game.make_move(square)
                 
                 if Game.check_win():
-                    reward = 1
                     
-                    for state, action in self.move_log:
-                        self.update_q_table(state, action, reward)
+                    winner = Game.move_log[-1][2]
+                    
+                    log_1 = self.move_log[::2]
+                    log_2 = self.move_log[1::2]
+                    
+                    if winner == 1:
+                        for state, action in log_1:
+                            self.update_q_table(state, action, reward=3)
+                            
+                        for state, action in log_2:
+                            self.update_q_table(state, action, reward=-1)
+                    
+                    else:
+                        for state, action in log_1:
+                            self.update_q_table(state, action, reward=-1)
+                            
+                        for state, action in log_2:
+                            self.update_q_table(state, action, reward=3)
                         
                     done = True
                     
-                elif Game.check_draw():
-                    reward = 0.5
-                    
+                elif Game.check_draw():                    
                     for state, action in self.move_log:
-                        self.update_q_table(state, action, reward)
-                    done = True
-                
-                # if there was no draw but there are no more valid moves it means you lost    
-                elif self.get_valid_actions == []:
-                    reward = -1
+                        self.update_q_table(state, action, reward=1)
+                        
                     done = True
                     
 

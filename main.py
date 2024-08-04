@@ -4,6 +4,10 @@ def main():
     
     game_state = MENACE.Gamestate()
     
+    agent=MENACE.Q_Learning()
+    
+    agent.train(10000)
+    
     while True:
         print('Do you want to play multi-player (1) or against MENACE (2)?')
         mode = int(input())
@@ -70,12 +74,13 @@ def main():
                     running = False
                 
                 else:
-                    agent = MENACE.Q_Learning()
                     state = agent.get_state(game_state.board)
                     
                     # here the agent decides what to do
                     # right now the decision is random based on the available squares
-                    action = agent.get_random_action(state)
+                    # action = agent.get_random_action(state)
+                    
+                    action = agent.get_weighted_action(state)
                     
                     # the input in the make_move function is a string
                     square = str(action + 1)
