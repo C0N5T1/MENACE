@@ -92,14 +92,9 @@ class Q_Learning():
     def get_random_action(self, state):
         
         valid_actions = self.get_valid_actions(state)
-        
         action = random.choice(valid_actions)
         
         return action
-    
-####################################################################################
-################################ Work in Progress ##################################
-####################################################################################
 
     # function that returns an action based on wieghts
     def get_weighted_action(self, state):
@@ -123,7 +118,7 @@ class Q_Learning():
         if state not in self.q_table:
             self.q_table[state] = np.ones(9)
             
-        self.qtable[state][action] += reward
+        self.q_table[state][action] += reward
         
     # function that appends a move to the move log
     def update_move_log(self, state, action):
@@ -134,25 +129,28 @@ class Q_Learning():
         
         for _ in range(epochs):
             
-            Game = Gamestate()
-            state = self.get_state(Game.board)
+            gamestate = Gamestate()
+            
             done = False
             
             while not done:
                 
+                state = self.get_state(gamestate.board)
+                
                 action = self.get_random_action(state)
                 square = str(action + 1)
                 
-                print(square)
+                gamestate.make_move(square)
                 
-                Game.make_move(square)
+                self.update_move_log(state, action)
                 
-                if Game.check_win():
+                if gamestate.check_win():
                     
-                    winner = Game.move_log[-1][2]
+                    winner = gamestate.move_log[-1][2]
                     
                     log_1 = self.move_log[::2]
                     log_2 = self.move_log[1::2]
+
                     
                     if winner == 1:
                         for state, action in log_1:
@@ -167,16 +165,14 @@ class Q_Learning():
                             
                         for state, action in log_2:
                             self.update_q_table(state, action, reward=3)
-                        
+                      
                     done = True
                     
-                elif Game.check_draw():                    
+                elif gamestate.check_draw():                    
                     for state, action in self.move_log:
                         self.update_q_table(state, action, reward=1)
                         
                     done = True
                     
-
-    
-        
-    
+        print(self.q_table)
+                    
