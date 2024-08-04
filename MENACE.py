@@ -1,6 +1,6 @@
 import numpy as np
 import random
-
+import json
 
 class Gamestate():
     
@@ -78,6 +78,20 @@ class Q_Learning():
     def __init__(self):
         self.q_table = {}
         self.move_log = []
+        
+    def save_q_table(self, filename):
+        data = self.q_table
+        
+        # Convert tuple keys to strings and numpy arrays to lists for JSON compatibility
+        data_to_save = {str(k): v.tolist() for k, v in data.items()}
+
+        # Save to JSON file
+        with open(f'{filename}.json', 'w') as json_file:
+            json.dump(data_to_save, json_file)
+            
+    def load_q_table(self, filename):
+        with open(filename, 'r') as f:
+            self.q_table = json.load(f)
      
     # turns a np.array into a tuple of length 9   
     def get_state(self, board):
@@ -173,6 +187,8 @@ class Q_Learning():
                         self.update_q_table(state, action, reward=1)
                         
                     done = True
+                    
+            self.move_log = []
                     
         print(self.q_table)
                     

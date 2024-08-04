@@ -6,7 +6,9 @@ def main():
     
     agent = MENACE.Q_Learning()
     
-    agent.train(100)
+    agent.train(1000)
+    
+    agent.save_q_table('my_first_AI.json')
     
 
 if __name__ == '__main__':
