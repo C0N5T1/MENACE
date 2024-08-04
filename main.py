@@ -52,9 +52,9 @@ def main():
         if player == 1:
             
             running = True
+            print('you chose to be player 1')
+            
             while running:
-                
-                print('you chose to be player 1')
                 
                 print(game_state.board)
                 print('Please input the square you want to place your piece on')
@@ -81,6 +81,8 @@ def main():
                     # action = agent.get_random_action(state)
                     
                     action = agent.get_weighted_action(state)
+                    
+                    print(agent.q_table[state])
                     
                     # the input in the make_move function is a string
                     square = str(action + 1)
