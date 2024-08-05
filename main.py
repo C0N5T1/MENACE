@@ -6,7 +6,7 @@ def main():
     
     agent=MENACE.Q_Learning()
     
-    agent.train(10000)
+    agent.load_q_table('my_first_AI.json')
     
     while True:
         print('Do you want to play multi-player (1) or against MENACE (2)?')
@@ -76,10 +76,7 @@ def main():
                 else:
                     state = agent.get_state(game_state.board)
                     
-                    # here the agent decides what to do
-                    # right now the decision is random based on the available squares
-                    # action = agent.get_random_action(state)
-                    
+                    # here the agent decides what to do                    
                     action = agent.get_weighted_action(state)
                     
                     print(agent.q_table[state])

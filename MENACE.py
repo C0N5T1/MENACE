@@ -86,12 +86,17 @@ class Q_Learning():
         data_to_save = {str(k): v.tolist() for k, v in data.items()}
 
         # Save to JSON file
-        with open(f'{filename}.json', 'w') as json_file:
+        with open(f'{filename}', 'w') as json_file:
             json.dump(data_to_save, json_file)
             
     def load_q_table(self, filename):
-        with open(filename, 'r') as f:
-            self.q_table = json.load(f)
+        with open(f'{filename}', 'r') as json_file:
+            loaded_data = json.load(json_file)
+
+        # Convert string keys back to tuples and lists to numpy arrays
+        data_loaded = {tuple(map(int, k.strip('()').split(', '))): np.array(v) for k, v in loaded_data.items()}
+        
+        self.q_table = data_loaded
      
     # turns a np.array into a tuple of length 9   
     def get_state(self, board):
@@ -119,6 +124,7 @@ class Q_Learning():
             self.q_table[state] = np.ones(9)
             
         weights = np.array([self.q_table[state][i] for i in valid_actions]) 
+        
         weights /= weights.sum()
         
         action = random.choices(valid_actions, weights=weights, k=1)[0]
@@ -131,14 +137,19 @@ class Q_Learning():
         
         if state not in self.q_table:
             self.q_table[state] = np.ones(9)
-            
-        self.q_table[state][action] += reward
+        
+        # applying a minimum of 1 for any one action   
+        if self.q_table[state][action] == 1 and reward == -1:
+            pass
+        
+        else:
+            self.q_table[state][action] += reward
         
     # function that appends a move to the move log
     def update_move_log(self, state, action):
         self.move_log.append((state, action))
         
-    # function that trains the model for a number of epochs using random moves
+    # function that trains the model for a number of epochs using the q_table
     def train(self, epochs):
         
         for _ in range(epochs):
@@ -151,6 +162,61 @@ class Q_Learning():
                 
                 state = self.get_state(gamestate.board)
                 
+                # training with weighted actions
+                action = self.get_weighted_action(state)
+                square = str(action + 1)
+                
+                gamestate.make_move(square)
+                
+                self.update_move_log(state, action)
+                
+                if gamestate.check_win():
+                    
+                    winner = gamestate.move_log[-1][2]
+                    
+                    log_1 = self.move_log[::2]
+                    log_2 = self.move_log[1::2]
+
+                    
+                    if winner == 1:
+                        for state, action in log_1:
+                            self.update_q_table(state, action, reward=3)
+                            
+                        for state, action in log_2:
+                            self.update_q_table(state, action, reward=-1)
+                    
+                    else:
+                        for state, action in log_1:
+                            self.update_q_table(state, action, reward=-1)
+                            
+                        for state, action in log_2:
+                            self.update_q_table(state, action, reward=3)
+                      
+                    done = True
+                    
+                elif gamestate.check_draw():                    
+                    for state, action in self.move_log:
+                        self.update_q_table(state, action, reward=1)
+                        
+                    done = True
+                    
+            self.move_log = []
+                    
+        print(self.q_table)
+        
+    def train_random(self, epochs):
+        
+        for _ in range(epochs):
+            
+            gamestate = Gamestate()
+            
+            done = False
+            
+            while not done:
+                
+                state = self.get_state(gamestate.board)
+                
+                # training with weighted actions
                 action = self.get_random_action(state)
                 square = str(action + 1)
                 

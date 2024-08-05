@@ -6,7 +6,10 @@ def main():
     
     agent = MENACE.Q_Learning()
     
-    agent.train(1000)
+    agent.load_q_table('my_first_AI.json')
+    
+    epochs = 1000
+    agent.train(epochs)
     
     agent.save_q_table('my_first_AI.json')
     
