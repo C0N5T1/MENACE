@@ -121,7 +121,7 @@ class Q_Learning():
         valid_actions = self.get_valid_actions(state)
         
         if state not in self.q_table:
-            self.q_table[state] = np.ones(9)
+            self.q_table[state] = np.ones(9) * 10
             
         weights = np.array([self.q_table[state][i] for i in valid_actions]) 
         
@@ -136,10 +136,10 @@ class Q_Learning():
     def update_q_table(self, state, action, reward):
         
         if state not in self.q_table:
-            self.q_table[state] = np.ones(9)
+            self.q_table[state] = np.ones(9) * 10
         
         # applying a minimum of 1 for any one action   
-        if self.q_table[state][action] == 1 and reward == -1:
+        if self.q_table[state][action] < 3 and reward == -2:
             pass
         
         else:
@@ -204,6 +204,8 @@ class Q_Learning():
                     
         print(self.q_table)
         
+    # function that trains the agent on random actions
+    # for an amount of epochs
     def train_random(self, epochs):
         
         for _ in range(epochs):
@@ -237,11 +239,11 @@ class Q_Learning():
                             self.update_q_table(state, action, reward=3)
                             
                         for state, action in log_2:
-                            self.update_q_table(state, action, reward=-1)
+                            self.update_q_table(state, action, reward=-2)
                     
                     else:
                         for state, action in log_1:
-                            self.update_q_table(state, action, reward=-1)
+                            self.update_q_table(state, action, reward=-2)
                             
                         for state, action in log_2:
                             self.update_q_table(state, action, reward=3)
