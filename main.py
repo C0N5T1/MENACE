@@ -1,4 +1,7 @@
 import MENACE
+import numpy as np
+
+filename = 'MENACE_AI.json'
 
 def main():
     
@@ -6,7 +9,7 @@ def main():
     
     agent=MENACE.Q_Learning()
     
-    agent.load_q_table('my_first_AI.json')
+    agent.load_q_table(filename)
     
     while True:
         print('Do you want to play multi-player (1) or against MENACE (2)?')
@@ -118,10 +121,16 @@ def main():
                         
                         running = False
                         
+            # iterating through the move log         
             for state, action in agent.move_log:
-                agent.update_q_table(state, action, reward)
+                board = np.array(state).reshape((3, 3))
+                equal_states, equal_actions = game_state.get_equal_states(board, action)
                 
-            agent.save_q_table('my_first_AI.json')
+                # iterating through the equivalent states/actions
+                for i in range(len(equal_states)):
+                    agent.update_q_table(equal_states[i], equal_actions[i], reward)
+                
+            agent.save_q_table(filename)
             
         # machine goes first
         elif player == 2:

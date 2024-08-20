@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import os
 import json
 
 class Gamestate():
@@ -71,7 +72,59 @@ class Gamestate():
         else:
             return False
         
+    # function that returns every equal tuple for one board 
+    def get_equal_states(self, board, action):
+
+        action_board = np.zeros(9)
+        action_board[action] = 1
+        action_board = action_board.reshape((3, 3))
         
+        boards = []
+        action_boards = []
+        
+        boards.append(board)
+        action_boards.append(action_board)
+        
+        # rotating 3 times
+        for _ in range(3):
+            
+            board = np.rot90(board)
+            action_board = np.rot90(action_board)
+            
+            boards.append(board)
+            action_boards.append(action_board)
+
+        # flipping once
+        board = np.flipud(board)
+        action_board = np.flipud(action_board)
+        
+        boards.append(board)
+        action_boards.append(action_board)
+        
+        # rotating 3 times
+        for _ in range(3):
+            
+            board = np.rot90(board)
+            action_board = np.rot90(action_board)
+            
+            boards.append(board)
+            action_boards.append(action_board) 
+
+        states = []
+        actions = []
+        
+        # converts the boards to tuples 
+        for i in range(len(boards)):
+            board_tuple = tuple(boards[i].flatten())
+            action_tuple = tuple(action_boards[i].flatten())
+            
+            # filters unique tuples and equivalent action
+            if board_tuple not in states:
+                states.append(board_tuple)
+                actions.append(action_tuple.index(1))
+                
+        return states, actions
+     
         
 class Q_Learning():
     
@@ -79,6 +132,7 @@ class Q_Learning():
         self.q_table = {}
         self.move_log = []
         
+    # function that saves the data
     def save_q_table(self, filename):
         data = self.q_table
         
@@ -88,8 +142,16 @@ class Q_Learning():
         # Save to JSON file
         with open(f'{filename}', 'w') as json_file:
             json.dump(data_to_save, json_file)
-            
+    
+    # function that loads the data     
     def load_q_table(self, filename):
+        
+        # Check if the file exists
+        if not os.path.exists(filename):
+            # If the file does not exist, create it and initialize with an empty dictionary
+            with open(filename, 'w') as json_file:
+                json.dump({}, json_file)
+                
         with open(f'{filename}', 'r') as json_file:
             loaded_data = json.load(json_file)
 
@@ -97,28 +159,23 @@ class Q_Learning():
         data_loaded = {tuple(map(int, k.strip('()').split(', '))): np.array(v) for k, v in loaded_data.items()}
         
         self.q_table = data_loaded
-     
+
     # turns a np.array into a tuple of length 9   
     def get_state(self, board):
         return tuple(board.flatten())
     
-    # returns the all squares that are empty
-    def get_valid_actions(self, state):
-        valid_actions = [i for i in range(9) if state[i] == 0]
-        return valid_actions
-    
-    # function that randomly chooses a move from the valid moves
+    # function that randomly chooses an action
     def get_random_action(self, state):
         
-        valid_actions = self.get_valid_actions(state)
+        valid_actions = [i for i in range(9) if state[i] == 0]
         action = random.choice(valid_actions)
         
         return action
 
-    # function that returns an action based on wieghts
+    # function that returns an action based on weights
     def get_weighted_action(self, state):
         
-        valid_actions = self.get_valid_actions(state)
+        valid_actions = [i for i in range(9) if state[i] == 0]
         
         if state not in self.q_table:
             self.q_table[state] = np.ones(9) * 10
@@ -260,3 +317,14 @@ class Q_Learning():
                     
         print(self.q_table)
                     
+
+
+if __name__ == '__main__':
+    gamestate = Gamestate()
+    
+    gamestate.board = np.array([
+                [-1, 1, 0],
+                [0, 0, 0],
+                [0, 0, 0]])
+    
+    print(gamestate.equal_states())
