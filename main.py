@@ -1,7 +1,11 @@
 import MENACE
 import numpy as np
 
-filename = 'MENACE_AI.json'
+filename = 'enforced_AI.json'
+
+reward_win = 3
+reward_draw = 2
+reward_loss = -2
 
 def main():
     
@@ -74,7 +78,7 @@ def main():
                     print(game_state.board)
                     
                     #setting the reward
-                    reward = -2
+                    reward = reward_loss
                     
                     running = False
                 
@@ -83,7 +87,7 @@ def main():
                     print(game_state.board)
                     
                     #setting the reward
-                    reward = 1
+                    reward = reward_draw
                     
                     running = False
                 
@@ -108,7 +112,7 @@ def main():
                         print(game_state.board)
                         
                         # setting the reward
-                        reward = 3
+                        reward = reward_win
                                                 
                         running = False
                     
@@ -117,7 +121,7 @@ def main():
                         print(game_state.board)
                         
                         # setting the reward
-                        reward = 1
+                        reward = reward_draw
                         
                         running = False
                         
@@ -162,7 +166,7 @@ def main():
                     print(game_state.board)
                     
                     # setting the reward
-                    reward = 3
+                    reward = reward_win
                                             
                     running = False
                 
@@ -171,7 +175,7 @@ def main():
                     print(game_state.board)
                     
                     # setting the reward
-                    reward = 1
+                    reward = reward_draw
                     
                     running = False
             
@@ -187,7 +191,7 @@ def main():
                         print(game_state.board)
                         
                         #setting the reward
-                        reward = -2
+                        reward = reward_loss
                         
                         running = False
                     
@@ -196,15 +200,20 @@ def main():
                         print(game_state.board)
                         
                         #setting the reward
-                        reward = 1
+                        reward = reward_draw
                         
                         running = False
                     
                         
             for state, action in agent.move_log:
-                agent.update_q_table(state, action, reward)
+                board = np.array(state).reshape((3, 3))
+                equal_states, equal_actions = game_state.get_equal_states(board, action)
                 
-            agent.save_q_table('my_first_AI.json')
+                # iterating through the equivalent states/actions
+                for i in range(len(equal_states)):
+                    agent.update_q_table(equal_states[i], equal_actions[i], reward)
+                
+            agent.save_q_table(filename)
             
         
 

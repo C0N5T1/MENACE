@@ -118,10 +118,8 @@ class Gamestate():
             board_tuple = tuple(boards[i].flatten())
             action_tuple = tuple(action_boards[i].flatten())
             
-            # filters unique tuples and equivalent action
-            if board_tuple not in states:
-                states.append(board_tuple)
-                actions.append(action_tuple.index(1))
+            states.append(board_tuple)
+            actions.append(action_tuple.index(1))
                 
         return states, actions
      
@@ -195,12 +193,10 @@ class Q_Learning():
         if state not in self.q_table:
             self.q_table[state] = np.ones(9) * 10
         
-        # applying a minimum of 1 for any one action   
-        if self.q_table[state][action] < 3 and reward == -2:
-            pass
+        self.q_table[state][action] += reward
         
-        else:
-            self.q_table[state][action] += reward
+        if self.q_table[state][action] < 1:
+            self.q_table[state][action] = 1
         
     # function that appends a move to the move log
     def update_move_log(self, state, action):
@@ -208,6 +204,11 @@ class Q_Learning():
         
     # function that trains the model for a number of epochs using the q_table
     def train(self, epochs):
+        
+        # easy access to the reward parameters
+        reward_win = 3
+        reward_draw = 1
+        reward_loss = -2
         
         for _ in range(epochs):
             
@@ -237,23 +238,23 @@ class Q_Learning():
                     
                     if winner == 1:
                         for state, action in log_1:
-                            self.update_q_table(state, action, reward=3)
+                            self.update_q_table(state, action, reward=reward_win)
                             
                         for state, action in log_2:
-                            self.update_q_table(state, action, reward=-1)
+                            self.update_q_table(state, action, reward=reward_loss)
                     
                     else:
                         for state, action in log_1:
-                            self.update_q_table(state, action, reward=-1)
+                            self.update_q_table(state, action, reward=reward_loss)
                             
                         for state, action in log_2:
-                            self.update_q_table(state, action, reward=3)
+                            self.update_q_table(state, action, reward=reward_win)
                       
                     done = True
                     
                 elif gamestate.check_draw():                    
                     for state, action in self.move_log:
-                        self.update_q_table(state, action, reward=1)
+                        self.update_q_table(state, action, reward=reward_draw)
                         
                     done = True
                     
@@ -264,6 +265,11 @@ class Q_Learning():
     # function that trains the agent on random actions
     # for an amount of epochs
     def train_random(self, epochs):
+        
+        # easy access to the reward parameters
+        reward_win = 3
+        reward_draw = 1
+        reward_loss = -2
         
         for _ in range(epochs):
             
@@ -293,23 +299,23 @@ class Q_Learning():
                     
                     if winner == 1:
                         for state, action in log_1:
-                            self.update_q_table(state, action, reward=3)
+                            self.update_q_table(state, action, reward=reward_win)
                             
                         for state, action in log_2:
-                            self.update_q_table(state, action, reward=-2)
+                            self.update_q_table(state, action, reward=reward_loss)
                     
                     else:
                         for state, action in log_1:
-                            self.update_q_table(state, action, reward=-2)
+                            self.update_q_table(state, action, reward=reward_loss)
                             
                         for state, action in log_2:
-                            self.update_q_table(state, action, reward=3)
+                            self.update_q_table(state, action, reward=reward_win)
                       
                     done = True
                     
                 elif gamestate.check_draw():                    
                     for state, action in self.move_log:
-                        self.update_q_table(state, action, reward=1)
+                        self.update_q_table(state, action, reward=reward_draw)
                         
                     done = True
                     
